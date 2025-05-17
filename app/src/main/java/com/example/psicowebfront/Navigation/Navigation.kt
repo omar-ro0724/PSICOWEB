@@ -37,9 +37,9 @@ fun Navigation(navController1: NavHostController, loginViewModel: LoginViewModel
 
         // Funcionalidades por rol
         composable("agenda_psicologo") { PsicologoHomeScreen(navController) }
-        composable("ver_usuarios") { AdminGestionUsuariosScreen(navController) }
-        composable("agregar_psicologo") { AdminGestionUsuariosScreen(navController) }
-        composable("gestionar_permisos") { AdminGestionUsuariosScreen(navController) }
+        composable("ver_usuarios") { VerUsuariosScreen() }
+        composable("agregar_psicologo") { AgregarPsicologoScreen(navController) }
+        composable("gestionar_permisos") { GestionarPermisosScreen() }
 
         composable(
             route = "agendar/{psicologoId}",
@@ -47,96 +47,6 @@ fun Navigation(navController1: NavHostController, loginViewModel: LoginViewModel
         ) { backStackEntry ->
             val psicologoId = backStackEntry.arguments?.getInt("psicologoId") ?: 0
             AgendarCitaScreen(navController, psicologoId)
-        }
-    }
-}
-
-@Composable
-fun AdminGestionUsuariosScreen(x0: NavHostController) {
-    TODO("Not yet implemented")
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MainScaffold(
-    usuario: Usuario,
-    onLogout: () -> Unit,
-    navController: NavHostController,
-    content: @Composable () -> Unit
-) {
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
-    val menuItems = when (usuario.rol.lowercase()) {
-        "usuario" -> listOf("Inicio" to "usuario_home", "Ver Psicólogos" to "psicologo_home")
-        "psicologo" -> listOf("Inicio" to "psicologo_home", "Mi Agenda" to "agenda_psicologo")
-        "admin" -> listOf(
-            "Inicio" to "admin_home",
-            "Usuarios" to "ver_usuarios",
-            "Psicólogos" to "agregar_psicologo",
-            "Gestionar Roles" to "gestionar_permisos"
-        )
-        else -> emptyList()
-    }
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Text(
-                    text = "Bienvenido, ${usuario.nombre}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(16.dp)
-                )
-
-                Divider()
-
-                menuItems.forEach { (label, route) ->
-                    Text(
-                        text = label,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(route)
-                                scope.launch { drawerState.close() }
-                            }
-                            .padding(16.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Divider()
-                Text(
-                    text = "Cerrar sesión",
-                    color = Color.Red,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onLogout()
-                            scope.launch { drawerState.close() }
-                        }
-                        .padding(16.dp)
-                )
-            }
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Psicoweb") },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu")
-
-                        }
-                    }
-                )
-            }
-        ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-                content()
-            }
         }
     }
 }
