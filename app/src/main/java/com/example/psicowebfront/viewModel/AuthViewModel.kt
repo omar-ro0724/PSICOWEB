@@ -1,4 +1,4 @@
-package com.example.psicowebfront.viewmodel
+package com.example.psicowebfront.viewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

@@ -33,34 +33,29 @@ fun HomeScreen(navController: NavController) {
     )
     var index by remember { mutableStateOf(0) }
 
-    // Cambiar frase cada 5 segundos
     LaunchedEffect(Unit) {
-        while(true) {
+        while (true) {
             kotlinx.coroutines.delay(5000)
             index = (index + 1) % frases.size
         }
     }
 
-    // Contenedor Box principal que ocupará toda la pantalla
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFE3F2FD))
-        // contentAlignment = Alignment.Center // Puedes quitarlo si alineas cada hijo individualmente
+        // contentAlignment = Alignment.Center
     ) {
-        // Texto con frases, alineado al centro del Box
         Text(
             text = frases[index],
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier
-                .align(Alignment.Center) // Alinear este Text específicamente al centro del Box
+                .align(Alignment.Center)
                 .padding(24.dp),
             textAlign = TextAlign.Center,
             color = Color(0xFF0D47A1)
         )
 
-        // Columna con los botones, ahora SÍ está DENTRO del Box
-        // y por lo tanto puede usar Modifier.align()
         Column(
             modifier = Modifier
                 .fillMaxWidth()

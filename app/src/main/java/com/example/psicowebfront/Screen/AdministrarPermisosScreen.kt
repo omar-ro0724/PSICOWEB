@@ -8,9 +8,13 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AdministrarPermisosScreen() {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Permisos de Usuario", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Aquí se podrán cambiar los permisos de los usuarios (próximamente).")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text("Permisos de Usuario", style = MaterialTheme.typography.headlineSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Aquí se podrán cambiar los permisos de los usuarios.")
+        }
     }
-}

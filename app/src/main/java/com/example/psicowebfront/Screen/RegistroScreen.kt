@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.psicowebfront.Modelo.Usuario
-import com.example.psicowebfront.viewmodel.AuthViewModel
+import com.example.psicowebfront.viewModel.AuthViewModel
 
 @Composable
 fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {

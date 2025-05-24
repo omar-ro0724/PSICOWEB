@@ -1,187 +1,156 @@
 package com.example.psicowebfront.Screen
 
-import androidx.compose.foundation.clickable
-import com.example.psicowebfront.Network.RetrofitCliente
+import android.app.DatePickerDialog
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.psicowebfront.Modelo.Cita
-import com.example.psicowebfront.Modelo.Disponibilidad
-import com.example.psicowebfront.Modelo.Usuario
-import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.psicowebfront.Modelo.CitaRequest
+import com.example.psicowebfront.Modelo.PsicologoResponse
+import com.example.psicowebfront.viewModel.CitaViewModel
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AgendarCitaScreen(navController: NavController, psicologoId: Int) {
-    val scope = rememberCoroutineScope()
-    var disponibilidades by remember { mutableStateOf(emptyList<Disponibilidad>()) }
-    var selectedDisp by remember { mutableStateOf<Disponibilidad?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
-    var error by remember { mutableStateOf<String?>(null) }
-    var isBooking by remember { mutableStateOf(false) }
+fun AgendarCitaScreen(viewModel: CitaViewModel = hiltViewModel()) {
+    val context = LocalContext.current
 
-    LaunchedEffect(psicologoId) {
-        isLoading = true
-        error = null
-        scope.launch {
-            val result = RetrofitCliente.instance.getDisponibilidadesPorPsicologo(psicologoId)
+    var fechaSeleccionada by remember { mutableStateOf<LocalDate?>(null) }
+    var horaSeleccionada by remember { mutableStateOf<LocalTime?>(null) }
+    var psicologoSeleccionado by remember { mutableStateOf<PsicologoResponse?>(null) }
 
-            try {
+    val psicologos by viewModel.psicologos.collectAsState()
+    val disponibilidades by viewModel.disponibilidades.collectAsState()
+    val citaAgendada by viewModel.citaAgendada.collectAsState()
 
-                disponibilidades = RetrofitCliente.instance.getDisponibilidadesPorPsicologo(psicologoId)
-                isLoading = false
-            } catch (e: Exception) {
-                error = "Error al cargar disponibilidades: ${e.message}"
-                isLoading = false
+    LaunchedEffect(Unit) {
+        viewModel.obtenerPsicologos()
+    }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        item {
+            Text("Agendar Cita", style = MaterialTheme.typography.headlineSmall)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            DropdownMenuPsicologos(psicologos, psicologoSeleccionado) { seleccionado ->
+                psicologoSeleccionado = seleccionado
+                seleccionado?.let {
+                    viewModel.obtenerDisponibilidades(it.id)
+                }
+                fechaSeleccionada = null
+                horaSeleccionada = null
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(onClick = {
+                val calendar = Calendar.getInstance()
+                DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        fechaSeleccionada = LocalDate.of(year, month + 1, dayOfMonth)
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
+            }) {
+                Text(text = fechaSeleccionada?.toString() ?: "Seleccionar Fecha")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (fechaSeleccionada != null) {
+                Text("Horas disponibles:", style = MaterialTheme.typography.titleMedium)
+                disponibilidades.filter { it.fecha == fechaSeleccionada }.forEach { disponibilidad ->
+                    Button(
+                        onClick = { horaSeleccionada = disponibilidad.horaInicio },
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(disponibilidad.horaInicio.toString())
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    if (psicologoSeleccionado != null && fechaSeleccionada != null && horaSeleccionada != null) {
+                        val cita = CitaRequest(
+                            pacienteId = viewModel.usuarioId,
+                            psicologoId = psicologoSeleccionado!!.id,
+                            fecha = fechaSeleccionada!!,
+                            hora = horaSeleccionada!!
+                        )
+                        viewModel.agendarCita(cita)
+                    } else {
+                        Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                enabled = psicologoSeleccionado != null && fechaSeleccionada != null && horaSeleccionada != null
+            ) {
+                Text("Confirmar Cita")
+            }
+
+            citaAgendada?.let { cita ->
+                Spacer(modifier = Modifier.height(24.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("✅ Recibo de Cita", style = MaterialTheme.typography.titleLarge)
+                        Text("📅 Fecha: ${cita.fecha}")
+                        Text("⏰ Hora: ${cita.hora}")
+                        Text("🧠 Psicólogo: ${psicologoSeleccionado?.nombre ?: "Desconocido"}")
+                        Text("🙍 Paciente ID: ${cita.usuarioId}")
+                        Text("💰 Valor: \$60.000 COP")
+                        Text("🔖 Referencia: ${cita.referencia ?: "Generando..."}")
+                    }
+                }
             }
         }
     }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Agendar Cita") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
-                    }
-                }
-            )
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                when {
-                    isLoading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                CircularProgressIndicator()
-                                Text("Cargando disponibilidades...")
-                            }
-                        }
-                    }
-                    error != null -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Error: $error", color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                    disponibilidades.isEmpty() -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("No hay disponibilidades para este psicólogo.")
-                        }
-                    }
-                    else -> {
-                        Text("Selecciona una disponibilidad:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
-                        LazyColumn(modifier = Modifier.weight(1f)) { // Permite que la lista ocupe el espacio restante
-                            items(disponibilidades) { disp ->
-                                DisponibilidadItem(
-                                    disponibilidad = disp,
-                                    isSelected = disp == selectedDisp,
-                                    onSelect = { selectedDisp = disp }
-                                )
-                            }
-                        }
-
-                        selectedDisp?.let { selected ->
-                            Button(
-                                onClick = {
-                                    isBooking = true
-                                    scope.launch {
-                                        try {
-                                            val currentUser = Usuario(
-                                                id = 1,
-                                                nombre = "Juan",
-                                                apellido = "Bustos",
-                                                correo = "juan@correo.com",
-                                                contrasena = "Angelito",
-                                                rol = "paciente",
-
-                                            )
-                                            val cita = Cita(
-                                                idCita = null,
-                                                fecha = "Fecha_Actual",
-                                                estado = "Agendada",
-                                                usuario = currentUser,
-                                                disponibilidad = selected,
-                                                hora = "Hora_Actual",
-                                                idUsuario = 1,
-                                                idPsicologo = 1
-                                            )
-
-                                            RetrofitCliente.instance.agendarCita(cita)
-                                            navController.navigate("home") {
-
-                                                popUpTo("home") { inclusive = true }
-                                            }
-                                        } catch (e: Exception) {
-                                            error = "Error al agendar cita: ${e.message}"
-                                        } finally {
-                                            isBooking = false
-                                        }
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp),
-                                enabled = !isBooking
-                            ) {
-                                if (isBooking) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Agendando...")
-                                } else {
-                                    Text("Confirmar Cita")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    )
 }
 
 @Composable
-fun DisponibilidadItem(
-    disponibilidad: Disponibilidad,
-    isSelected: Boolean,
-    onSelect: (Disponibilidad) -> Unit
+fun DropdownMenuPsicologos(
+    psicologos: List<PsicologoResponse>,
+    seleccionado: PsicologoResponse?,
+    onSeleccionar: (PsicologoResponse?) -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onSelect(disponibilidad) },
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = "Fecha: ${disponibilidad.fecha}", style = MaterialTheme.typography.bodyMedium)
+    var expanded by remember { mutableStateOf(false) }
+    var selectedNombre by remember { mutableStateOf(seleccionado?.nombre ?: "Seleccionar Psicólogo") }
+
+    Box {
+        Button(onClick = { expanded = true }) {
+            Text(text = selectedNombre)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            psicologos.forEach { psicologo ->
+                DropdownMenuItem(
+                    text = { Text(text = psicologo.nombre) },
+                    onClick = {
+                        selectedNombre = psicologo.nombre
+                        onSeleccionar(psicologo)
+                        expanded = false
+                    }
+                )
             }
         }
     }

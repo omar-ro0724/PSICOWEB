@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    kotlin("kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -49,6 +51,9 @@ android {
         implementation("com.squareup.retrofit2:converter-gson:2.9.0")
         implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
         implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+        implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+        implementation("com.google.dagger:hilt-android:2.48")
+        kapt("com.google.dagger:hilt-android-compiler:2.48")
 
 
         implementation(platform(libs.androidx.compose.bom))
@@ -59,7 +64,6 @@ android {
         implementation(libs.androidx.navigation.compose)
         implementation(libs.androidx.lifecycle.runtime.ktx)
 
-        // Test
         testImplementation(libs.junit)
         androidTestImplementation(libs.androidx.junit)
         androidTestImplementation(libs.androidx.espresso.core)

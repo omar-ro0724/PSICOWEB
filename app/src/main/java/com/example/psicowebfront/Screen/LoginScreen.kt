@@ -23,9 +23,8 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
     val error by loginViewModel.errorLogin.collectAsState()
     val isLoading by loginViewModel.isLoading.collectAsState()
 
-    // Navegación automática al detectar usuario logueado
-    usuario?.let {
-        LaunchedEffect(it) {
+    LaunchedEffect(usuario) {
+        usuario?.let {
             when (it.rol) {
                 "usuario" -> navController.navigate("usuario_home") { popUpTo("login") { inclusive = true } }
                 "psicologo" -> navController.navigate("psicologo_home") { popUpTo("login") { inclusive = true } }
@@ -42,34 +41,47 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
     ) {
         Text("Iniciar sesión", style = MaterialTheme.typography.headlineLarge)
         Spacer(modifier = Modifier.height(24.dp))
+
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Contraseña") },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(modifier = Modifier.height(16.dp))
+
         Button(
-            onClick = { loginViewModel.login(email, password) },
+            onClick = {
+                if (email.isNotBlank() && password.isNotBlank()) {
+                    loginViewModel.login(email, password)
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading
         ) {
             Text("Entrar")
         }
+
         if (isLoading) {
             Spacer(modifier = Modifier.height(16.dp))
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         }
+
         error?.let {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
@@ -77,9 +89,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = v
                 color = Color.Red,
                 style = MaterialTheme.typography.bodyMedium
             )
-            // Limpia el error después de mostrarlo
             LaunchedEffect(it) {
-                // Espera 2 segundos y limpia el error automáticamente
                 kotlinx.coroutines.delay(2000)
                 loginViewModel.limpiarError()
             }
