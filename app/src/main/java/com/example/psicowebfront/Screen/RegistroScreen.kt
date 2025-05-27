@@ -9,19 +9,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.psicowebfront.Modelo.Usuario
 import com.example.psicowebfront.viewModel.AuthViewModel
 
 @Composable
-fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
+fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = hiltViewModel()) {
     var nombre by remember { mutableStateOf("") }
     var apellido by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
     var rol by remember { mutableStateOf("usuario") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val authViewModel: AuthViewModel = hiltViewModel()
+
 
     val context = LocalContext.current
 

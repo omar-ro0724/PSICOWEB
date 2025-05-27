@@ -4,10 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.psicowebfront.Modelo.PsicologoRequest
 import com.example.psicowebfront.repository.PsicologoRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AgregarPsicologoViewModel(
-    private val repository: PsicologoRepository = PsicologoRepository()
+@HiltViewModel
+class AgregarPsicologoViewModel @Inject constructor(
+    private val repository: PsicologoRepository
 ) : ViewModel() {
 
     fun registrarPsicologo(

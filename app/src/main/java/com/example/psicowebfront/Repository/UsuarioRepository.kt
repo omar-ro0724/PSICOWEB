@@ -1,4 +1,4 @@
-package com.example.psicowebfront.Repository
+package com.example.psicowebfront.repository
 
 import android.view.PixelCopy.request
 import com.example.psicowebfront.Modelo.LoginRequest

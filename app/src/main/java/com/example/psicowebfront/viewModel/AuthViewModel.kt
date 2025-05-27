@@ -5,12 +5,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.psicowebfront.Modelo.LoginRequest
 import com.example.psicowebfront.Modelo.Usuario
-import com.example.psicowebfront.Network.RetrofitCliente
+import com.example.psicowebfront.Network.ApiService
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AuthViewModel : ViewModel() {
+
+@HiltViewModel
+class AuthViewModel @Inject constructor(    private val apiService: ApiService
+
+) : ViewModel() {
 
     private val _usuarioActual = MutableStateFlow<Usuario?>(null)
     val usuarioActual = _usuarioActual.asStateFlow()
@@ -20,17 +26,22 @@ class AuthViewModel : ViewModel() {
 
     fun login(email: String, password: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            try {
-                val loginRequest = LoginRequest(correo = email, contrasena = password)
-                val response = RetrofitCliente.instance.login(loginRequest)
-                if (response.isSuccessful) {
-                    _usuarioActual.value = response.body()
-                    onResult(true)
-                } else {
-                    _usuarioActual.value = null
-                    onResult(false)
+            val loginRequest = LoginRequest(correo = email, contrasena = password)
+            val response = apiService.login(loginRequest)
+            if (response.isSuccessful) {
+                val loginResponse = response.body()
+                if (loginResponse != null) {
+                    _usuarioActual.value = Usuario(
+                        id = loginResponse.usuarioId.toInt(),
+                        nombre = "",
+                        apellido = "",
+                        correo = email,
+                        contrasena = password,
+                        rol = loginResponse.rol
+                    )
                 }
-            } catch (e: Exception) {
+                onResult(true)
+            } else {
                 _usuarioActual.value = null
                 onResult(false)
             }
@@ -41,7 +52,7 @@ class AuthViewModel : ViewModel() {
     fun registrar(usuario: Usuario, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             try {
-                val response = RetrofitCliente.instance.registrarUsuario(usuario)
+                val response = apiService.registrarUsuario(usuario)
                 if (response.isSuccessful) {
                     onResult(true, null)
                 } else {

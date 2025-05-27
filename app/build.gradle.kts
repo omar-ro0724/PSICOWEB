@@ -52,8 +52,8 @@ android {
         implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
         implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
         implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-        implementation("com.google.dagger:hilt-android:2.48")
-        kapt("com.google.dagger:hilt-android-compiler:2.48")
+        implementation("com.google.dagger:hilt-android:2.51.1")
+        kapt("com.google.dagger:hilt-android-compiler:2.51.1")
 
 
         implementation(platform(libs.androidx.compose.bom))

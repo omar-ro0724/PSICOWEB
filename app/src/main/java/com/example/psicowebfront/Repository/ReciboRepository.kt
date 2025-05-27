@@ -1,4 +1,4 @@
-package com.example.psicowebfront.Repository
+package com.example.psicowebfront.repository
 
 
 import com.example.psicowebfront.Modelo.Psicologo
@@ -11,9 +11,7 @@ import javax.inject.Inject
 class ReciboRepository @Inject constructor(
     private val apiService: ApiService
 ) {
-    suspend fun obtenerRecibo(citaId: Long): Response<ReciboPago> {
-        return apiService.generarRecibo(citaId)
-    }
-
+    suspend fun obtenerRecibo(citaId: Long): Response<ReciboPago> =
+        apiService.obtenerRecibo(citaId)
 }
 

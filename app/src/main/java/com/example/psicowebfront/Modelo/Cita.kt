@@ -5,7 +5,7 @@ import java.time.LocalTime
 
 data class Cita(
     val idCita: Long? = null,
-    val idUsuario: Long,
+    val idPaciente: Long,
     val idPsicologo: Long,
     val fecha: LocalDate,
     val hora: LocalTime,

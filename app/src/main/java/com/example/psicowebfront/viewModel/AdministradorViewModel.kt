@@ -9,7 +9,7 @@ import com.example.psicowebfront.Modelo.Psicologo
 import com.example.psicowebfront.Modelo.PsicologoResponse
 import com.example.psicowebfront.Modelo.Usuario
 import com.example.psicowebfront.Modelo.UsuarioResponse
-import com.example.psicowebfront.Repository.AdminRepository
+import com.example.psicowebfront.repository.AdminRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import retrofit2.Response
@@ -17,41 +17,36 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AdministradorViewModel @Inject constructor(
-    private val repository: AdminRepository) : ViewModel() {
+    private val repository: AdminRepository
+) : ViewModel() {
+    var usuarios by mutableStateOf<List<UsuarioResponse>>(emptyList())
+        private set
 
-    var usuarios: Response<List<UsuarioResponse>> by mutableStateOf<List<Usuario>>(emptyList())
-    var psicologos: Response<List<PsicologoResponse>> by mutableStateOf<List<Psicologo>>(emptyList())
+    var psicologos by mutableStateOf<List<PsicologoResponse>>(emptyList())
+        private set
 
     var loading by mutableStateOf(false)
+        private set
 
     fun cargarUsuarios() {
         viewModelScope.launch {
             loading = true
-            usuarios = repository.obtenerTodosLosUsuarios()
+            val response = repository.obtenerTodosLosUsuarios()
+            if (response.isSuccessful) {
+                usuarios = response.body() ?: emptyList()
+            }
             loading = false
         }
     }
 
     fun cargarPsicologos() {
-
         viewModelScope.launch {
             loading = true
-            psicologos = repository.obtenerTodosLosPsicologos()
+            val response = repository.obtenerTodosLosPsicologos()
+            if (response.isSuccessful) {
+                psicologos = response.body() ?: emptyList()
+            }
             loading = false
-        }
-    }
-
-    fun eliminarUsuario(id: Long) {
-        viewModelScope.launch {
-            repository.eliminarUsuario(id)
-            cargarUsuarios()
-        }
-    }
-
-    fun eliminarPsicologo(id: Long) {
-        viewModelScope.launch {
-            repository.eliminarPsicologo(id)
-            cargarPsicologos()
         }
     }
 }

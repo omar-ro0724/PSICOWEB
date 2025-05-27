@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,8 +48,15 @@ fun HomeScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE3F2FD))
-        // contentAlignment = Alignment.Center
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFFBBDEFB),
+                        Color(0xFFE3F2FD),
+                        Color(0xFFFFFFFF)
+                    )
+                )
+            )
     ) {
         Text(
             text = frases[index],
@@ -55,12 +67,23 @@ fun HomeScreen(navController: NavController) {
             textAlign = TextAlign.Center,
             color = Color(0xFF0D47A1)
         )
+        Card(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = 32.dp)
+                .shadow(8.dp, RoundedCornerShape(24.dp)),
+            shape = RoundedCornerShape(24.dp),
+            elevation = CardDefaults.cardElevation(8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White.copy(alpha = 0.95f)
+            )
+        ){
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(24.dp)
-                .align(Alignment.BottomCenter), // Esto ahora es válido
+                .align(alignment = Alignment.BottomCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
@@ -79,3 +102,4 @@ fun HomeScreen(navController: NavController) {
         }
     }
 }
+    }

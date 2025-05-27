@@ -1,34 +1,31 @@
 package com.example.psicowebfront.viewModel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.psicowebfront.Modelo.Psicologo
 import com.example.psicowebfront.Modelo.PsicologoResponse
 import com.example.psicowebfront.repository.PsicologoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.Response
 import javax.inject.Inject
 
 @HiltViewModel
 class PsicologoViewModel @Inject constructor(
-    private val repository: PsicologoRepository
+    private val repository : PsicologoRepository
 ) : ViewModel() {
 
-    var psicologos: Response<List<PsicologoResponse>> by mutableStateOf<List<Psicologo>>(emptyList())
-        private set
-
-    var loading by mutableStateOf(false)
-        private set
+    private val _psicologos = MutableStateFlow<List<PsicologoResponse>>(emptyList())
+    val psicologos: StateFlow<List<PsicologoResponse>> = _psicologos.asStateFlow()
 
     fun obtenerPsicologos() {
         viewModelScope.launch {
-            loading = true
-            psicologos = repository.obtenerPsicologos()
-            loading = false
+            val response = repository.obtenerPsicologos()
+            if (response.isSuccessful) {
+                _psicologos.value = repository.obtenerPsicologos().body() ?: emptyList()
+            }
         }
+
     }
 }
